@@ -1,0 +1,22 @@
+# Spins up PostgreSQL 16 with the pgvector extension preinstalled.
+# Usage:  docker compose up -d
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: apply_advisor_db
+    environment:
+      POSTGRES_USER: advisor
+      POSTGRES_PASSWORD: advisor
+      POSTGRES_DB: apply_advisor
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U advisor -d apply_advisor"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pgdata:
