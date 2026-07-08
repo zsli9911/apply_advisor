@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Apply Advisor · 留学申请顾问</title>
+<style>
+  :root{
+    --bg:#f5f6f8;--panel:#fff;--ink:#1d2330;--muted:#6b7280;--line:#e5e7eb;
+    --brand:#2f6df6;--bot:#f1f3f7;--chip:#eef2ff;--chip-ink:#3949ab;
+    --warn:#b45309;--ok:#0f766e;--reach:#dc2626;--match:#059669;--safer:#2563eb;
+  }
+  @media (prefers-color-scheme:dark){:root{--bg:#0f1115;--panel:#171a21;--ink:#e6e8ee;
+    --muted:#9aa3b2;--line:#262b36;--bot:#1e222b;--chip:#20263a;--chip-ink:#a9b6ff;
+    --warn:#fbbf24;--ok:#5eead4;--reach:#f87171;--match:#34d399;--safer:#60a5fa;}}
+  *{box-sizing:border-box}
+  body{margin:0;font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:var(--bg);color:var(--ink);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+  header{display:flex;align-items:center;gap:10px;padding:11px 16px;background:var(--panel);border-bottom:1px solid var(--line);flex:none}
+  header .logo{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#2f6df6,#7c3aed);display:grid;place-items:center;color:#fff;font-weight:700}
+  header h1{font-size:15px;margin:0}
+  header .mode{margin-left:auto;font-size:12px;color:var(--muted);border:1px solid var(--line);padding:3px 9px;border-radius:999px}
+  header button.tgl{border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:8px;padding:4px 9px;cursor:pointer;font-size:13px}
+  .app{flex:1;display:flex;min-height:0}
+  /* sidebar */
+  .sidebar{width:210px;flex:none;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;overflow:hidden}
+  .sidebar h2{font-size:12px;color:var(--muted);margin:0;padding:12px 14px 6px;let-spacing:.05em}
+  .sidebar .new{margin:6px 12px;padding:8px;border:1px dashed var(--line);border-radius:10px;background:transparent;color:var(--brand);cursor:pointer;font-weight:600}
+  .sessions{flex:1;overflow:auto;padding:4px 8px}
+  .sessions .s{padding:8px 10px;border-radius:8px;cursor:pointer;font-size:13px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sessions .s.active{background:var(--chip);color:var(--chip-ink)}
+  /* chat */
+  .chat{flex:1;display:flex;flex-direction:column;min-width:0}
+  .msgs{flex:1;overflow:auto;padding:20px;display:flex;flex-direction:column;gap:16px}
+  .row{display:flex;gap:10px;max-width:860px}
+  .row.me{align-self:flex-end;flex-direction:row-reverse}
+  .avatar{width:28px;height:28px;border-radius:8px;flex:none;display:grid;place-items:center;font-size:13px;background:var(--bot)}
+  .row.me .avatar{background:var(--brand);color:#fff}
+  .bubble{padding:11px 14px;border-radius:14px;background:var(--bot);word-break:break-word;min-width:40px}
+  .row.me .bubble{background:var(--brand);color:#fff;border-bottom-right-radius:4px}
+  .row.bot .bubble{border-bottom-left-radius:4px}
+  .bubble h3{margin:.4em 0 .2em;font-size:15px}
+  .bubble ul,.bubble ol{margin:.3em 0;padding-left:1.2em}
+  .bubble code{background:rgba(127,127,127,.18);padding:1px 5px;border-radius:5px;font-size:.9em}
+  .status{font-size:12px;color:var(--muted);margin-top:6px}
+  .meta{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px}
+  .chip{font-size:12px;background:var(--chip);color:var(--chip-ink);padding:2px 9px;border-radius:999px}
+  .chip.warn{background:transparent;color:var(--warn);border:1px solid currentColor}
+  details.detail{margin-top:8px;font-size:13px;color:var(--muted)}
+  details.detail summary{cursor:pointer}
+  details.detail .src{padding:6px 0;border-top:1px dashed var(--line)}
+  details.detail .ft{font-size:11px;color:var(--ok);margin-left:6px}
+  /* recommendation cards */
+  .cards{margin-top:12px;display:grid;gap:10px}
+  .card{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--panel)}
+  .card .top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .card .uni{font-weight:700}
+  .card .prog{color:var(--muted);font-size:13px}
+  .badge{font-size:12px;font-weight:700;color:#fff;padding:2px 9px;border-radius:999px}
+  .badge.reach{background:var(--reach)}.badge.match{background:var(--match)}.badge.safer{background:var(--safer)}
+  .score{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:700}
+  .card .lists{margin-top:8px;font-size:13px;display:grid;gap:3px}
+  .card .good{color:var(--match)}.card .risk{color:var(--warn)}.card .miss{color:var(--muted)}
+  .card .elig{font-size:12px;color:var(--muted)}
+  .nextacts{margin-top:10px;font-size:13px}
+  /* right panel */
+  .panel{width:260px;flex:none;background:var(--panel);border-left:1px solid var(--line);overflow:auto;padding:14px}
+  .panel h2{font-size:12px;color:var(--muted);margin:14px 0 6px}
+  .panel h2:first-child{margin-top:0}
+  .panel .kv{font-size:13px;display:flex;justify-content:space-between;gap:8px;padding:3px 0;border-bottom:1px dashed var(--line)}
+  .panel .kv b{font-weight:600;color:var(--muted);font-weight:500}
+  .panel .empty{color:var(--muted);font-size:13px}
+  /* composer */
+  .examples{display:flex;gap:8px;flex-wrap:wrap;padding:0 20px 8px}
+  .examples button{font-size:12px;color:var(--chip-ink);background:var(--chip);border:0;padding:5px 10px;border-radius:999px;cursor:pointer}
+  .composer{border-top:1px solid var(--line);background:var(--panel);padding:12px 16px;display:flex;gap:10px}
+  .composer textarea{flex:1;resize:none;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font:inherit;background:var(--bg);color:var(--ink);max-height:140px}
+  .composer button{border:0;background:var(--brand);color:#fff;font-weight:600;padding:0 20px;border-radius:12px;cursor:pointer}
+  .composer button:disabled{opacity:.5}
+  .hint{padding:0 20px 6px;font-size:12px;color:var(--muted)}
+  .typing i{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--muted);animation:b 1s infinite}
+  .typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+  @keyframes b{0%,60%,100%{opacity:.3}30%{opacity:1}}
+  @media(max-width:900px){.sidebar,.panel{display:none}.sidebar.show,.panel.show{display:flex;position:absolute;top:50px;bottom:0;z-index:9}.sidebar.show{left:0}.panel.show{right:0}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">留</div>
+  <h1>Apply Advisor · 留学申请顾问</h1>
+  <button class="tgl" id="tglL">会话</button>
+  <button class="tgl" id="tglR">画像</button>
+  <span class="mode" id="mode">…</span>
+</header>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <h2>会话</h2>
+    <button class="new" id="newBtn">+ 新会话</button>
+    <div class="sessions" id="sessions"></div>
+  </aside>
+  <div class="chat">
+    <div class="msgs" id="msgs"></div>
+    <div class="examples" id="examples"></div>
+    <div class="composer">
+      <textarea id="box" rows="1" placeholder="描述你的背景和目标，例如：三年制本科计算机，均分88（百分制），雅思6.5，预算1万欧/年，想去法国读英语授课数据科学硕士…"></textarea>
+      <button id="send">发送</button>
+    </div>
+    <div class="hint">Enter 发送 · Shift+Enter 换行 · 回答实时流式生成</div>
+  </div>
+  <aside class="panel" id="panel">
+    <h2>用户画像</h2><div id="pProfile" class="empty">（暂无）</div>
+    <h2>申请进度</h2><div id="pApps" class="empty">（暂无）</div>
+    <h2>已排除</h2><div id="pExcl" class="empty">（暂无）</div>
+  </aside>
+</div>
+<script>
+const uuid=()=>(crypto.randomUUID?.()||String(Math.random())).slice(0,12);
+const $=id=>document.getElementById(id);
+let sessions=[], cur=null;
+
+fetch('/api/config').then(r=>r.json()).then(c=>{$('mode').textContent='LLM: '+c.mode+(c.no_db?' · 无数据库':'');});
+
+function newSession(){ const s={id:uuid(),title:'新会话',msgs:[]}; sessions.unshift(s); cur=s; renderSessions(); renderMsgs(); greet(); }
+function switchTo(s){ cur=s; renderSessions(); renderMsgs(); refreshPanel(); }
+function renderSessions(){ const el=$('sessions'); el.innerHTML='';
+  sessions.forEach(s=>{const d=document.createElement('div');d.className='s'+(s===cur?' active':'');
+    d.textContent=s.title;d.onclick=()=>switchTo(s);el.appendChild(d);}); }
+function renderMsgs(){ const m=$('msgs'); m.innerHTML=''; cur.msgs.forEach(x=>drawBubble(x.role,x.html)); m.scrollTop=m.scrollHeight; }
+
+function esc(s){return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+function inl(s){return s.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/`(.+?)`/g,'<code>$1</code>');}
+function md(t){const L=esc(t).split('\n');let h='',list=null;const flush=()=>{if(list){h+=`</${list}>`;list=null;}};
+  for(let ln of L){let m;
+    if(/^#{1,3}\s+/.test(ln)){flush();h+='<h3>'+ln.replace(/^#{1,3}\s+/,'')+'</h3>';continue;}
+    if((m=ln.match(/^\s*[-*]\s+(.*)/))){if(list!=='ul'){flush();h+='<ul>';list='ul';}h+='<li>'+inl(m[1])+'</li>';continue;}
+    if((m=ln.match(/^\s*\d+\.\s+(.*)/))){if(list!=='ol'){flush();h+='<ol>';list='ol';}h+='<li>'+inl(m[1])+'</li>';continue;}
+    flush();h+=ln.trim()?'<p>'+inl(ln)+'</p>':'';}
+  flush();return h;}
+
+function drawBubble(role,html){const row=document.createElement('div');row.className='row '+(role==='me'?'me':'bot');
+  row.innerHTML=`<div class="avatar">${role==='me'?'你':'AI'}</div><div class="bubble">${html}</div>`;
+  $('msgs').appendChild(row);$('msgs').scrollTop=$('msgs').scrollHeight;return row.querySelector('.bubble');}
+
+function cardsHtml(std){ if(!std||!std.recommendations||!std.recommendations.length) return '';
+  let h='<div class="cards">';
+  for(const r of std.recommendations){
+    const cat=r.category;
+    h+=`<div class="card"><div class="top"><span class="uni">${esc(r.university||'')}</span>`
+      +`<span class="badge ${cat}">${cat==='reach'?'冲刺':cat==='safer'?'保底':'匹配'}</span>`
+      +`<span class="score">${r.match_score}</span></div>`
+      +`<div class="prog">${esc(r.program||'')}</div>`
+      +`<div class="elig">${esc(r.eligibility||'')} · ${esc(r.estimated_range||'')}</div><div class="lists">`;
+    (r.strengths||[]).slice(0,3).forEach(s=>h+=`<div class="good">✓ ${esc(s)}</div>`);
+    (r.risks||[]).forEach(s=>h+=`<div class="risk">⚠ ${esc(s)}</div>`);
+    (r.missing_information||[]).forEach(s=>h+=`<div class="miss">? ${esc(s)}</div>`);
+    h+='</div></div>';
+  }
+  h+='</div>';
+  if((std.next_actions||[]).length){h+='<div class="nextacts"><b>下一步：</b><ul>';
+    std.next_actions.forEach(a=>h+=`<li>${esc(a)}</li>`);h+='</ul></div>';}
+  return h;
+}
+function metaHtml(d){let h='';let m='';
+  if(d.intent)m+=`<span class="chip">意图 · ${d.intent}</span>`;
+  (d.missing_fields||[]).forEach(f=>m+=`<span class="chip warn">待补充 · ${f}</span>`);
+  if(m)h+=`<div class="meta">${m}</div>`;
+  (d.profile_warnings||[]).forEach(w=>h+=`<div class="meta"><span class="chip warn">⚠ ${esc(w)}</span></div>`);
+  if((d.sources||[]).length||(d.steps||[]).length){
+    h+=`<details class="detail"><summary>来源与工具轨迹（${(d.sources||[]).length} 条来源）</summary>`;
+    (d.sources||[]).forEach(s=>h+=`<div class="src">(${esc(s.kind)}) ${esc(s.ref)} — ${esc(s.detail)}`+(s.fact_type?`<span class="ft">${esc(s.fact_type)}</span>`:'')+`</div>`);
+    if((d.steps||[]).length)h+=`<div class="src" style="opacity:.7">trace: ${esc((d.steps||[]).join('  →  '))}</div>`;
+    h+=`</details>`;}
+  return h;}
+
+async function ask(text){
+  cur.msgs.push({role:'me',html:esc(text)}); drawBubble('me',esc(text));
+  if(cur.title==='新会话'){cur.title=text.slice(0,18); renderSessions();}
+  const bub=drawBubble('bot','<span class="typing"><i></i><i></i><i></i></span>');
+  $('send').disabled=true;
+  let raw='', done=null, statusLine='';
+  const paint=()=>{bub.innerHTML=(raw?md(raw):'<span class="typing"><i></i><i></i><i></i></span>')+(statusLine?`<div class="status">${statusLine}</div>`:'');$('msgs').scrollTop=$('msgs').scrollHeight;};
+  try{
+    const resp=await fetch('/api/chat/stream',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_id:cur.id,message:text})});
+    const reader=resp.body.getReader(); const dec=new TextDecoder(); let buf='';
+    while(true){ const {value,done:fin}=await reader.read(); if(fin)break;
+      buf+=dec.decode(value,{stream:true}); let i;
+      while((i=buf.indexOf('\n\n'))>=0){ const line=buf.slice(0,i); buf=buf.slice(i+2);
+        if(!line.startsWith('data: '))continue; const ev=JSON.parse(line.slice(6));
+        if(ev.type==='intent'){statusLine='识别意图：'+ev.intent;paint();}
+        else if(ev.type==='step'){statusLine='正在调用工具：'+ev.step+' …';paint();}
+        else if(ev.type==='delta'){statusLine='';raw+=ev.text;paint();}
+        else if(ev.type==='done'){done=ev;}
+      }
+    }
+    let html=md(raw||(done&&done.answer)||'(无回答)');
+    if(done){ html+=cardsHtml(done.recommendations)+metaHtml(done); }
+    bub.innerHTML=html; cur.msgs.push({role:'bot',html});
+    refreshPanel();
+  }catch(e){ bub.innerHTML='出错了：'+esc(String(e)); }
+  $('send').disabled=false; $('msgs').scrollTop=$('msgs').scrollHeight;
+}
+
+async function refreshPanel(){
+  try{ const st=await (await fetch('/api/state/'+cur.id)).json();
+    const prof=st.profile||{}; const keys=Object.keys(prof).filter(k=>k!=='field_meta'&&k!=='notes');
+    $('pProfile').innerHTML=keys.length?keys.map(k=>`<div class="kv"><b>${k}</b><span>${esc(JSON.stringify(prof[k]))}</span></div>`).join(''):'<div class="empty">（暂无）</div>';
+    $('pProfile').className='';
+    const apps=st.applications||{}; const ak=Object.keys(apps);
+    $('pApps').innerHTML=ak.length?ak.map(k=>`<div class="kv"><b>${esc(apps[k].program)}</b><span>${esc(apps[k].status)}</span></div>`).join(''):'<div class="empty">（暂无）</div>';
+    const ex=st.excluded_programs||{}; const ek=Object.keys(ex);
+    $('pExcl').innerHTML=ek.length?ek.map(k=>`<div class="kv"><b>${esc(ex[k].program)}</b><span>${esc(ex[k].reason)}</span></div>`).join(''):'<div class="empty">（暂无）</div>';
+  }catch(e){}
+}
+
+const EXAMPLES=[
+  "三年制本科计算机，均分88（百分制），雅思6.5，预算1万欧/年，想去法国读英语授课数据科学硕士，毕业想做机器学习工程师",
+  "法国学生签证怎么办？语言豁免政策是什么？",
+  "帮我对比 Paris-Saclay 和 Grenoble INP 的数据科学硕士",
+];
+EXAMPLES.forEach(t=>{const b=document.createElement('button');b.textContent=t.slice(0,20)+'…';b.onclick=()=>{$('box').value=t;$('box').focus();};$('examples').appendChild(b);});
+
+function greet(){ drawBubble('bot',md("你好 👋 我是留学申请顾问。告诉我你的**学历、成绩、语言、预算、目标国家和专业**，我会做院校推荐（冲刺/匹配/保底 卡片）、政策检索、材料清单和申请计划。")); }
+
+function submit(){const v=$('box').value.trim();if(!v)return;$('box').value='';$('box').style.height='auto';ask(v);}
+$('send').onclick=submit;
+$('newBtn').onclick=newSession;
+$('tglL').onclick=()=>$('sidebar').classList.toggle('show');
+$('tglR').onclick=()=>$('panel').classList.toggle('show');
+$('box').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();submit();}});
+$('box').addEventListener('input',()=>{$('box').style.height='auto';$('box').style.height=$('box').scrollHeight+'px';});
+newSession();
+</script>
+</body>
+</html>
